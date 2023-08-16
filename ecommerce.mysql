@@ -1,0 +1,125 @@
+-- Active: 1692185081201@@127.0.0.1@3306
+
+--criacao do banco de dados para o cenario de e-commerce
+
+CREATE database ecommerce;
+USE ecommerce;
+
+--criacao da tabela de clientes
+
+CREATE Table clientes(
+    id_cliente int auto_increment PRIMARY KEY,
+    fnome varchar(10) not null,
+    lname varchar(20) not null,
+    minit char(3),
+    cpf varchar(15) not null,
+    constraint unique_cpf_client unique(cpf),
+    endereco VARCHAR(100) NOT NULL
+);
+ALTER TABLE clientes AUTO_INCREMENT = 1;
+
+--criacao da tabela de produtos
+CREATE Table produto(
+    id_produto int auto_increment PRIMARY KEY,
+    Pnome varchar(10) not null,
+    classification_kids BOOL DEFAULT FALSE,
+    category ENUM('eletronico','roupa','alimento','brinquedo','livro','outros'),
+    avaliacao FLOAT DEFAULT 0,
+    tamanho VARCHAR(10)   
+);
+
+CREATE Table payments(
+    id_payment int auto_increment PRIMARY KEY,
+    idORder_cliente int not null,
+    paymentMethod ENUM('cartao','boleto','pix') NOT NULL,
+    paymentValue FLOAT NOT NULL,
+    paymentDate DATE NOT NULL,
+    constraint fk_payment_client foreign key(idORder_cliente) references clientes(id_cliente)
+);
+
+--criacao da tabela de pedidos
+
+CREATE Table pedidos(
+    id_pedido int auto_increment PRIMARY KEY,
+    idORder_cliente int not null,
+    OrderStatus ENUM('pendente','entregue','cancelado') DEFAULT 'pendente',
+    Orderdescription VARCHAR(100) NOT NULL,
+    sendValue FLOAT DEFAULT 10,
+    paymentCash BOOL DEFAULT FALSE,
+    constraint fk_orders_client foreign key(idORder_cliente) references clientes(id_cliente)
+        ON update cascade
+        
+);
+
+--criar tabela estoque
+
+CREATE Table estoque(
+    id_ProEstoque int auto_increment PRIMARY KEY,
+    storageLocation VARCHAR(100) NOT NULL,
+    quantidade int default 0
+);
+
+--criar tabela de fornecedores
+
+CREATE Table fornecedores(
+    id_fornecedor int auto_increment PRIMARY KEY,
+    nomeFornecedor VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20) NOT NULL,
+    telefone VARCHAR(11) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    constraint unique_cnpj_fornecedor unique(cnpj)
+);
+
+--criar tabela de vendedor 
+
+CREATE Table vendedor(
+    id_vendedor int auto_increment PRIMARY KEY,
+    nomeVendedor VARCHAR(100) NOT NULL,
+    cnpj VARCHAR(20),
+    cpf VARCHAR(15),
+    telefone VARCHAR(11) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    constraint unique_cpf_vendedor unique(cpf),
+    constraint unique_cnpj_vendedor unique(cnpj)
+);
+
+CREATE Table vendedor_produto(
+    id_vendedor int not null,
+    id_produto int not null,
+    produto_quantidade int DEFAULT 1,
+    PRIMARY KEY(id_vendedor,id_produto),
+    constraint fk_vendedor_produto foreign key(id_vendedor) references vendedor(id_vendedor),
+    constraint fk_produto_vendedor foreign key(id_produto) references produto(id_produto)
+);
+
+CREATE TABLE productOrder(
+    id_produto int not null,
+    id_pedido int not null,
+    quantidade int DEFAULT 1,
+    statusProduct ENUM('disponivel', 'sem estoque') DEFAULT 'disponivel',
+    PRIMARY KEY(id_produto,id_pedido),
+   constraint fk_produto_order foreign key(id_produto) references produto(id_produto),
+    constraint fk_order_produto foreign key(id_pedido) references pedidos(id_pedido)
+);
+
+CREATE TABLE storageLocation(
+    id_produto int not null,
+    id_Estoque int not null,
+    localizacao VARCHAR(100) NOT NULL ,
+    PRIMARY KEY(id_produto,id_Estoque),
+    constraint fk_produto_estoque foreign key(id_produto) references produto(id_produto),
+    constraint fk_estoque_produto foreign key(id_Estoque) references estoque( id_ProEstoque)
+);
+
+CREATE Table productSupplier(
+    id_produto int not null,
+    id_fornecedor int not null,
+    quantidade int NOT NULL,
+    PRIMARY KEY(id_produto,id_fornecedor),
+    constraint fk_produto_fornecedor foreign key(id_produto) references produto(id_produto),
+    constraint fk_fornecedor_produto foreign key(id_fornecedor) references fornecedores(id_fornecedor)
+);
+
+SHOW TABLES;
+SHOW DATABASES;
+```
